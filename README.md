@@ -7,6 +7,6 @@ Description
 
 
 Purpose 
-- All Quasar will be under ZTD 
+- All Quasar nodes will be under ZTD 
 
 Repo From TwoTouch Namespace [Prototype]

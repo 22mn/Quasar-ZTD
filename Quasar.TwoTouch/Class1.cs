@@ -15,7 +15,32 @@ using Revit.Elements;
 /// This is a prototype for Quasar package.
 /// </summary>
 namespace Quasar
-{
+{   /// <summary>
+    /// Utility class for tools methods
+    /// </summary>
+    public static class Utility
+    {   
+       
+        [IsVisibleInDynamoLibrary(false)]
+        public static BoundingBoxXYZ crop_box(BoundingBoxXYZ bbox, double offset)
+        {
+            var minx = bbox.Min.X - offset;
+            var miny = bbox.Min.Y - offset;
+            var minz = bbox.Min.Z - offset;
+            var maxx = bbox.Max.X + offset;
+            var maxy = bbox.Max.Y + offset;
+            var maxz = bbox.Max.Z + offset;
+
+            var newbox = new BoundingBoxXYZ();
+            newbox.Min = new XYZ(minx, miny, minz);
+            newbox.Max = new XYZ(maxx, maxy, maxz);
+
+            return newbox;
+
+        }
+
+    }
+
     /// <summary>
     ///     Main class for Quasar, later class will be named based on node category.
     /// </summary>
@@ -127,33 +152,21 @@ namespace Quasar
             return "Done!";
         }
         /// <summary>
-        /// Utility class for tools methods
+        /// Create 3D Views for given room.
         /// </summary>
-        public static class Utility
+        /// <returns name="ThreeDView">New 3D Views</returns>
+        [IsVisibleInDynamoLibrary(true)]
+        public static Revit.Elements.Element ThreeDViewByRoom()
         {
-            [IsVisibleInDynamoLibrary(false)]
-            public static BoundingBoxXYZ crop_box(BoundingBoxXYZ bbox, double offset)
-            {
-                var minx = bbox.Min.X - offset;
-                var miny = bbox.Min.Y - offset;
-                var minz = bbox.Min.Z - offset;
-                var maxx = bbox.Max.X + offset;
-                var maxy = bbox.Max.Y + offset;
-                var maxz = bbox.Max.Z + offset;
+            ///var ThreeDViews = new List<Revit.Elements.Views.View>();
+            var doc = DocumentManager.Instance.CurrentDBDocument;
+            var vtype = new FilteredElementCollector(doc).OfClass(typeof(ViewFamilyType)).Cast<ViewFamilyType>().FirstOrDefault( a=>a.ViewFamily == ViewFamily.ThreeDimensional);
+            RevitServices.Transactions.TransactionManager.Instance.EnsureInTransaction(doc);
+            View3D ThreeDView = View3D.CreateIsometric(doc, vtype.Id);
+            ThreeDView.Name = "Dummy";
+            RevitServices.Transactions.TransactionManager.Instance.TransactionTaskDone();
 
-                var newbox = new BoundingBoxXYZ();
-                newbox.Min = new XYZ(minx, miny, minz);
-                newbox.Max = new XYZ(maxx, maxy, maxz);
-
-                return newbox;
-
-            }
-            public static List<Revit.Elements.Views.View> ThreeDViewByRoom()
-            {
-                var ThreeDViews = new List<Revit.Elements.Views.View>();
-
-                return ThreeDViews;
-            }
+            return ThreeDView.ToDSType(true);
         }
     }
 }

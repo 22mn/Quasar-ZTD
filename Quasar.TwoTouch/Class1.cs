@@ -93,5 +93,38 @@ namespace Quasar
             RevitServices.Transactions.TransactionManager.Instance.TransactionTaskDone();
             return Views;
         }
+        /// <summary>
+        /// Elements hide/unhide in given view. Default value is true(hide).
+        /// </summary>
+        /// <param name="Elements">Elements or Element</param>
+        /// <param name="Views">Views or View</param>
+        /// <param name="HideUnhide">true = hide , false = unhide</param>
+        /// <returns>Return message</returns>
+        [IsVisibleInDynamoLibrary(true)]
+        public static String HideUnHideElement(List<Revit.Elements.Element> Elements, List<Revit.Elements.Element> Views,Boolean HideUnhide=false)
+        {
+            var ids = new List<ElementId>();
+            RevitServices.Transactions.TransactionManager.Instance.EnsureInTransaction(RevitServices.Persistence.DocumentManager.Instance.CurrentDBDocument);
+            foreach (var elem in Elements)
+            {
+                var id = (Autodesk.Revit.DB.Element)elem.InternalElement;
+                ids.Add(id.Id);
+            }
+            foreach (var view in Views)
+            {
+                if (HideUnhide == true)
+                {
+                    var v = (Autodesk.Revit.DB.View)view.InternalElement;
+                    v.HideElements(ids);
+                }
+                else
+                {
+                    var v = (Autodesk.Revit.DB.View)view.InternalElement;
+                    v.UnhideElements(ids);
+                }
+            }
+            RevitServices.Transactions.TransactionManager.Instance.TransactionTaskDone();
+            return "Done!";
+        }
     }
 }

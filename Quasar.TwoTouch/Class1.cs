@@ -43,6 +43,7 @@ namespace Quasar
         /// <summary>
         /// Return current view from this document.
         /// </summary>
+        [IsVisibleInDynamoLibrary(true)]
         public static Revit.Elements.Element ActiveView()
         {
             var ActiveView = DocumentManager.Instance.CurrentDBDocument.ActiveView.ToDSType(true);

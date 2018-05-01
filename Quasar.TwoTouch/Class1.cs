@@ -156,9 +156,10 @@ namespace Quasar
         /// </summary>
         /// <param name="Rooms">Rooms elements</param>
         /// <param name="Names">Name for new views</param>
+        /// <param name="Offset">Offset value for section box. Default is 500.</param>
         /// <returns name="ThreeDView">New 3D Views</returns>
         [IsVisibleInDynamoLibrary(true)]
-        public static List<Revit.Elements.Element> ThreeDViewByRoom(List<Revit.Elements.Room> Rooms, List<String> Names,double Offset)
+        public static List<Revit.Elements.Element> ThreeDViewByRoom(List<Revit.Elements.Room> Rooms, List<String> Names,double Offset=500/304.8)
         {
             var ThreeDViews = new List<Revit.Elements.Element>();
             var doc = DocumentManager.Instance.CurrentDBDocument;

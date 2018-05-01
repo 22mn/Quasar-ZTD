@@ -126,5 +126,34 @@ namespace Quasar
             RevitServices.Transactions.TransactionManager.Instance.TransactionTaskDone();
             return "Done!";
         }
+        /// <summary>
+        /// Utility class for tools methods
+        /// </summary>
+        public static class Utility
+        {
+            [IsVisibleInDynamoLibrary(false)]
+            public static BoundingBoxXYZ crop_box(BoundingBoxXYZ bbox, double offset)
+            {
+                var minx = bbox.Min.X - offset;
+                var miny = bbox.Min.Y - offset;
+                var minz = bbox.Min.Z - offset;
+                var maxx = bbox.Max.X + offset;
+                var maxy = bbox.Max.Y + offset;
+                var maxz = bbox.Max.Z + offset;
+
+                var newbox = new BoundingBoxXYZ();
+                newbox.Min = new XYZ(minx, miny, minz);
+                newbox.Max = new XYZ(maxx, maxy, maxz);
+
+                return newbox;
+
+            }
+            public static List<Revit.Elements.Views.View> ThreeDViewByRoom()
+            {
+                var ThreeDViews = new List<Revit.Elements.Views.View>();
+
+                return ThreeDViews;
+            }
+        }
     }
 }

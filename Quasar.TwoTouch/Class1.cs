@@ -154,19 +154,34 @@ namespace Quasar
         /// <summary>
         /// Create 3D Views for given room.
         /// </summary>
+        /// <param name="Rooms">Rooms elements</param>
+        /// <param name="Names">Name for new views</param>
         /// <returns name="ThreeDView">New 3D Views</returns>
         [IsVisibleInDynamoLibrary(true)]
-        public static Revit.Elements.Element ThreeDViewByRoom()
+        public static List<Revit.Elements.Element> ThreeDViewByRoom(List<Revit.Elements.Room> Rooms, List<String> Names,double Offset)
         {
-            ///var ThreeDViews = new List<Revit.Elements.Views.View>();
+            var ThreeDViews = new List<Revit.Elements.Element>();
             var doc = DocumentManager.Instance.CurrentDBDocument;
             var vtype = new FilteredElementCollector(doc).OfClass(typeof(ViewFamilyType)).Cast<ViewFamilyType>().FirstOrDefault( a=>a.ViewFamily == ViewFamily.ThreeDimensional);
             RevitServices.Transactions.TransactionManager.Instance.EnsureInTransaction(doc);
-            View3D ThreeDView = View3D.CreateIsometric(doc, vtype.Id);
-            ThreeDView.Name = "Dummy";
+            foreach(var elem in Rooms.Zip(Names, Tuple.Create))
+            {
+                BoundingBoxXYZ bbox = elem.Item1.InternalElement.get_BoundingBox(doc.ActiveView);
+                var newbbox = Utility.crop_box(bbox, Offset);
+                View3D ThreeDView = View3D.CreateIsometric(doc, vtype.Id);
+                ThreeDView.Name = elem.Item2;
+                ThreeDView.SetSectionBox(newbbox);
+                ThreeDView.CropBoxActive = true;
+                ThreeDView.CropBoxVisible = true;
+                ThreeDView.Scale = 50;
+                ThreeDView.DetailLevel = ViewDetailLevel.Fine;
+                ThreeDView.DisplayStyle = DisplayStyle.Realistic;
+                ThreeDViews.Add(ThreeDView.ToDSType(true));
+
+            }
             RevitServices.Transactions.TransactionManager.Instance.TransactionTaskDone();
 
-            return ThreeDView.ToDSType(true);
+            return ThreeDViews;
         }
     }
 }

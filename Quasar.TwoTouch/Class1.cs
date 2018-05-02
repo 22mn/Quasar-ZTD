@@ -20,7 +20,12 @@ namespace Quasar
     /// </summary>
     public static class Utility
     {   
-       
+        /// <summary>
+        /// Utility class tool
+        /// </summary>
+        /// <param name="bbox"></param>
+        /// <param name="offset"></param>
+        /// <returns></returns>
         [IsVisibleInDynamoLibrary(false)]
         public static BoundingBoxXYZ crop_box(BoundingBoxXYZ bbox, double offset)
         {

@@ -159,7 +159,7 @@ namespace Quasar
         /// <param name="Offset">Offset value for section box. Default is 500.</param>
         /// <returns name="ThreeDView">New 3D Views</returns>
         [IsVisibleInDynamoLibrary(true)]
-        public static List<Revit.Elements.Element> ThreeDViewByRoom(List<Revit.Elements.Room> Rooms, List<String> Names,double Offset=500/304.8)
+        public static List<Revit.Elements.Element> ThreeDViewByRoom(List<Revit.Elements.Room> Rooms, List<String> Names,double Offset=500)
         {
             var ThreeDViews = new List<Revit.Elements.Element>();
             var doc = DocumentManager.Instance.CurrentDBDocument;
@@ -168,7 +168,7 @@ namespace Quasar
             foreach(var elem in Rooms.Zip(Names, Tuple.Create))
             {
                 BoundingBoxXYZ bbox = elem.Item1.InternalElement.get_BoundingBox(doc.ActiveView);
-                var newbbox = Utility.crop_box(bbox, Offset);
+                var newbbox = Utility.crop_box(bbox, Offset/304.8);
                 View3D ThreeDView = View3D.CreateIsometric(doc, vtype.Id);
                 ThreeDView.Name = elem.Item2;
                 ThreeDView.SetSectionBox(newbbox);
@@ -184,5 +184,7 @@ namespace Quasar
 
             return ThreeDViews;
         }
+
+
     }
 }

@@ -220,6 +220,7 @@ namespace Quasar
                 CeilingView.Add(dupview.ToDSType(true));
 
             }
+            RevitServices.Transactions.TransactionManager.Instance.TransactionTaskDone();
 
             return CeilingView;
         }

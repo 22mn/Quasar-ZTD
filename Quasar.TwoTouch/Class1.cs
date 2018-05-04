@@ -190,6 +190,19 @@ namespace Quasar
             return ThreeDViews;
         }
 
+        [IsVisibleInDynamoLibrary(false)]
+        public static String LinkLevelGrid(Revit.Elements.Element Element,Boolean Hide = true)
+        {
 
+            return "DONE!";
+        }
+
+        public static List<String> GetBuiltInParameterName(List<String>)
+        {
+            var NameList = new List<String>();
+
+
+            return NameList;
+        }
     }
 }

@@ -190,6 +190,40 @@ namespace Quasar
             return ThreeDViews;
         }
 
+        /// <summary>
+        /// Create ceiling views by rooms, names and offset.
+        /// </summary>
+        /// <param name="Level">Level element</param>
+        /// <param name="Rooms"></param>
+        /// <param name="Names">List of names for new views</param>
+        /// <param name="Offset">Cropbox offset from room</param>
+        /// <returns name="CeilingView">Created Ceiling Views</returns>
+        public static List<Revit.Elements.Element> CeilingViewByRoom(Revit.Elements.Element Level, List<Revit.Elements.Room> Rooms, List<String> Names, double Offset = 500)
+        {
+            var CeilingView = new List<Revit.Elements.Element>();
+            var doc = DocumentManager.Instance.CurrentDBDocument;
+            var CViews = new FilteredElementCollector(doc).OfClass(typeof(View)).Cast<View>().Where(x => x.ViewType == ViewType.CeilingPlan).ToList();
+            var ceiling = from c in CViews where c.LookupParameter("Associated Level").AsString() == Level.Name.ToString() select c;
+            var view = ceiling.First();
+            RevitServices.Transactions.TransactionManager.Instance.EnsureInTransaction(doc);
+            foreach (var elem in Rooms.Zip(Names, Tuple.Create))
+            {
+                var v = view.Duplicate(ViewDuplicateOption.WithDetailing);
+                BoundingBoxXYZ bbox = elem.Item1.InternalElement.get_BoundingBox(doc.ActiveView);
+                var newbbox = Utility.crop_box(bbox, Offset / 304.8);
+                var dupview = (Autodesk.Revit.DB.View)doc.GetElement(v);
+                dupview.Name = elem.Item2;
+                dupview.CropBox = newbbox;
+                dupview.CropBoxActive = true;
+                dupview.CropBoxVisible = true;
+                dupview.Scale = view.Scale;
+                CeilingView.Add(dupview.ToDSType(true));
+
+            }
+
+            return CeilingView;
+        }
+
         [IsVisibleInDynamoLibrary(false)]
         public static String LinkLevelGrid(Revit.Elements.Element Element,Boolean Hide = true)
         {
@@ -197,7 +231,8 @@ namespace Quasar
             return "DONE!";
         }
 
-        public static List<String> GetBuiltInParameterName(List<String>)
+        [IsVisibleInDynamoLibrary(false)]
+        public static List<String> GetBuiltInParameterName(List<String> Names)
         {
             var NameList = new List<String>();
 

@@ -225,6 +225,56 @@ namespace Quasar
             return CeilingView;
         }
 
+        [IsVisibleInDynamoLibrary(true)]
+        public static List<IEnumerable<Autodesk.DesignScript.Geometry.Surface>> ElevationInRoom(List<Revit.Elements.Room> Rooms,List<String> Names,double Offset)
+        {
+            var doc = DocumentManager.Instance.CurrentDBDocument;
+            var vtype = new FilteredElementCollector(doc).OfClass(typeof(ViewFamilyType)).Cast<ViewFamilyType>().FirstOrDefault(a => a.ViewFamily == ViewFamily.Elevation);
+            var Boxes = new List<IEnumerable<Autodesk.DesignScript.Geometry.Surface>>();
+
+            foreach (var r in Rooms)
+            {
+
+                LocationPoint elevPoint = (Autodesk.Revit.DB.LocationPoint)r.InternalElement.Location;
+                XYZ point = elevPoint.Point;
+                BoundingBoxXYZ bbox = r.InternalElement.get_BoundingBox(doc.ActiveView);
+                ElevationMarker marker = Autodesk.Revit.DB.ElevationMarker.CreateElevationMarker(doc, vtype.Id, point, 50);
+
+
+                BoundingBoxXYZ bcrop = Utility.crop_box(bbox, Offset / 304.8);
+                var surfaces = bcrop.ToProtoType(true).ToPolySurface().Surfaces().Skip(2).Take(4);
+
+                var west = surfaces.ElementAt(0).PerimeterCurves();
+                var westcurve = new List<Autodesk.Revit.DB.Curve>();
+                foreach(var w in west) { westcurve.Add(w.ToRevitType(true));}
+
+                var north = surfaces.ElementAt(1).PerimeterCurves();
+                var northcurve = new List<Autodesk.Revit.DB.Curve>();
+                foreach (var w in north) { northcurve.Add(w.ToRevitType(true)); }
+
+                var east = surfaces.ElementAt(2).PerimeterCurves();
+                var eastcurve = new List<Autodesk.Revit.DB.Curve>();
+                foreach (var w in east) { eastcurve.Add(w.ToRevitType(true)); }
+
+                var south = surfaces.ElementAt(3).PerimeterCurves();
+                var southcurve = new List<Autodesk.Revit.DB.Curve>();
+                foreach (var w in south) { southcurve.Add(w.ToRevitType(true)); }
+
+
+
+                Boxes.Add(surfaces);
+            }
+            return Boxes;
+        }
+
+
+        /// <summary>
+        /// Hide/Unhide levels and grids from link documents.
+        /// </summary>
+        /// <param name="Element"></param>
+        /// <param name="Hide"></param>
+        /// <returns>return message</returns>
+
         [IsVisibleInDynamoLibrary(false)]
         public static String LinkLevelGrid(Revit.Elements.Element Element,Boolean Hide = true)
         {

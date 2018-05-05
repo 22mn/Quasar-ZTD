@@ -305,13 +305,72 @@ namespace Quasar
         /// <summary>
         /// Hide/Unhide levels and grids from link documents.
         /// </summary>
-        /// <param name="Element"></param>
-        /// <param name="Hide"></param>
+        /// <param name="Hide"> Hide = true, Unhide = false</param>
         /// <returns>return message</returns>
 
         [IsVisibleInDynamoLibrary(false)]
-        public static String LinkLevelGrid(Revit.Elements.Element Element,Boolean Hide = true)
+        public static String LinkLevelGrid(Boolean Hide = true)
         {
+            String ifilter = "LinkLevelGrid_QuasarPackage";
+            var doc = DocumentManager.Instance.CurrentDBDocument;
+            var activeView = doc.ActiveView;
+            Boolean found = false;
+            Boolean hide = Hide == true ? false : true;
+
+            RevitServices.Transactions.TransactionManager.Instance.EnsureInTransaction(doc);
+
+            var allFilters = new FilteredElementCollector(doc).OfClass(typeof(FilterElement)).ToElements();
+       
+            var viewFilters = activeView.GetFilters();
+            List<String> viewFiltersName = new List<String>();
+            foreach (var v in viewFilters) { viewFiltersName.Add(doc.GetElement(v).Name.ToString()); }
+
+            foreach (var fter in allFilters)
+            {
+                if (ifilter == fter.Name.ToString() && !viewFiltersName.Contains(ifilter))
+                {
+                    activeView.AddFilter(fter.Id);
+                    activeView.SetFilterVisibility(fter.Id, hide);
+                    found = true;
+                }
+                if (ifilter == fter.Name.ToString() && viewFiltersName.Contains(ifilter))
+                {
+                    activeView.SetFilterVisibility(fter.Id, hide);
+                    found = true;
+                }
+            }
+
+            if (!found)
+            {
+                var grids = new FilteredElementCollector(doc).OfClass(typeof(Autodesk.Revit.DB.Grid)).ToElements();
+                var levels = new FilteredElementCollector(doc).OfClass(typeof(Autodesk.Revit.DB.Level)).ToElements();
+                var cateIds = new List<ElementId> {grids.First().Category.Id, levels.First().Category.Id};
+                var gridTypeIds = new HashSet<ElementId>();
+                var levelTypeIds = new HashSet<ElementId>();
+                foreach (var i in grids.Zip(levels, Tuple.Create)){gridTypeIds.Add(i.Item1.GetTypeId());levelTypeIds.Add(i.Item2.GetTypeId());}
+
+                var gtypeElements = new List<Autodesk.Revit.DB.Element>();
+                var ltypeElements = new List<Autodesk.Revit.DB.Element>();
+                foreach (var i in gridTypeIds.Zip(levelTypeIds,Tuple.Create)) { gtypeElements.Add(doc.GetElement(i.Item1)); ltypeElements.Add(doc.GetElement(i.Item2));}
+                gtypeElements.AddRange(ltypeElements);
+
+                foreach (var e in gtypeElements)
+                {
+                    if (! e.LookupParameter("Type Name").AsString().Contains("_quasar"))
+                    {
+                        e.Name = e.LookupParameter("Type Name").AsString() + "_quasar";
+                    }
+                }
+                var paramId = gtypeElements.First().LookupParameter("Type Name").Id;
+                var ruleSet = new List<FilterRule>();
+                var notEndsWith = ParameterFilterRuleFactory.CreateNotEndsWithRule(paramId, "_quasar", false);
+                ruleSet.Add(notEndsWith);
+                var paramFilterElem = ParameterFilterElement.Create(doc, ifilter, cateIds,ruleSet );
+                var ogs = new OverrideGraphicSettings();
+                activeView.SetFilterOverrides(paramFilterElem.Id, ogs);
+                activeView.SetFilterVisibility(paramFilterElem.Id, hide);
+            }
+            RevitServices.Transactions.TransactionManager.Instance.TransactionTaskDone();
 
             return "DONE!";
         }

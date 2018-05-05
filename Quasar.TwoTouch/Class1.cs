@@ -308,7 +308,7 @@ namespace Quasar
         /// <param name="Hide"> Hide = true, Unhide = false</param>
         /// <returns>return message</returns>
 
-        [IsVisibleInDynamoLibrary(false)]
+        [IsVisibleInDynamoLibrary(true)]
         public static String LinkLevelGrid(Boolean Hide = true)
         {
             String ifilter = "LinkLevelGrid_QuasarPackage";

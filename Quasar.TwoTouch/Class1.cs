@@ -156,6 +156,43 @@ namespace Quasar
             RevitServices.Transactions.TransactionManager.Instance.TransactionTaskDone();
             return "Done!";
         }
+
+        /// <summary>
+        /// Create floor plan views by rooms, names and offset.
+        /// </summary>
+        /// <param name="Level">Level element</param>
+        /// <param name="Rooms"></param>
+        /// <param name="Names">List of names for new views</param>
+        /// <param name="Offset">Cropbox offset from room</param>
+        /// <returns name="FloorPlanView">Created Ceiling Views</returns>
+        public static List<Revit.Elements.Element> FloorPlanViewByRoom(Revit.Elements.Element Level, List<Revit.Elements.Room> Rooms, List<String> Names, double Offset = 500)
+        {
+            var FloorPlanView = new List<Revit.Elements.Element>();
+            var doc = DocumentManager.Instance.CurrentDBDocument;
+            var CViews = new FilteredElementCollector(doc).OfClass(typeof(View)).Cast<View>().Where(x => x.ViewType == ViewType.FloorPlan).ToList();
+            var ceiling = from c in CViews where c.LookupParameter("Associated Level").AsString() == Level.Name.ToString() select c;
+            var view = ceiling.First();
+            RevitServices.Transactions.TransactionManager.Instance.EnsureInTransaction(doc);
+            foreach (var elem in Rooms.Zip(Names, Tuple.Create))
+            {
+                var v = view.Duplicate(ViewDuplicateOption.WithDetailing);
+                BoundingBoxXYZ bbox = elem.Item1.InternalElement.get_BoundingBox(doc.ActiveView);
+                var newbbox = Utility.crop_box(bbox, Offset / 304.8);
+                var dupview = (Autodesk.Revit.DB.View)doc.GetElement(v);
+                dupview.Name = elem.Item2;
+                dupview.CropBox = newbbox;
+                dupview.CropBoxActive = true;
+                dupview.CropBoxVisible = true;
+                dupview.Scale = view.Scale;
+                FloorPlanView.Add(dupview.ToDSType(true));
+
+            }
+            RevitServices.Transactions.TransactionManager.Instance.TransactionTaskDone();
+
+            return FloorPlanView;
+        }
+
+
         /// <summary>
         /// Create 3D Views for given room.
         /// </summary>
@@ -375,13 +412,34 @@ namespace Quasar
             return "DONE!";
         }
 
-        [IsVisibleInDynamoLibrary(false)]
-        public static List<String> GetBuiltInParameterName(List<String> Names)
+        /// <summary>
+        /// Built-In Parameter Name by element and parameter(s).
+        /// </summary>
+        /// <param name="Element">Element input</param>
+        /// <param name="Names">Parameter name or names (string)</param>
+        /// <returns name = "NameList">Each list contains [0] ParameterName [1] BuiltIn ParameterName</returns>
+        [IsVisibleInDynamoLibrary(true)]
+        public static List<List<String>> GetBuiltInParameterName(Revit.Elements.Element Element,List<String> Names)
         {
-            var NameList = new List<String>();
+            var NameList = new List<List<String>>();
+            var builtInNames = new HashSet<String>();
+            foreach (var i in System.Enum.GetValues(typeof(BuiltInParameter)))
+            {
+                var sub = new List<String>();
+                foreach(var p in Names)
+                {
 
+                    if (Element.InternalElement.get_Parameter((BuiltInParameter)i) != null && Element.InternalElement.get_Parameter((BuiltInParameter)i).Definition.Name == p)
+                    {
+                        sub.Add(p); sub.Add(i.ToString());
+                        NameList.Add(sub);
+                    }
+                }
+            }
 
             return NameList;
         }
+
+        
     }
 }

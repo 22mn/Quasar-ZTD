@@ -15,7 +15,7 @@ namespace Quasar
     public static class DynamoNodes
     {
         /// <summary>
-        /// Surface and U, V divisions 
+        /// Surface divides to Quad Panels
         /// </summary>
         /// <param name="Surface">Surface</param>
         /// <param name="Udivision">Number of division</param>
@@ -61,6 +61,240 @@ namespace Quasar
             return new Dictionary<string, object> { { "Panels", panels }, { "Polygons", polygons } };
 
         }
+
+        /// <summary>
+        /// Surface divides to Diamond Panel and Triangle Panel
+        /// </summary>
+        /// <param name="Surface"></param>
+        /// <param name="Udivision"></param>
+        /// <param name="Vdivision"></param>
+        /// <returns></returns>
+
+
+        [IsVisibleInDynamoLibrary(true)]
+        [MultiReturn(new[] { "DiamondPanel", "TrianglePanel" })]
+        public static Dictionary<string,object> DiamondPanel(Surface Surface, double Udivision, double Vdivision)
+        {
+            var dpanels = new List<Surface>();
+            var tpanels = new List<Surface>();
+
+            var ustep = 1.0 / Udivision;
+            var vstep = 1.0 / Vdivision;
+
+            for (var i = 0; i < (Udivision+1); i++)
+            {
+                for (var j = 0; j < (Vdivision+1); i++)
+                {
+                    if ((i + j) % 2 == 0)
+                    {
+                        var pointA = Surface.PointAtParameter(0, 0);
+                        var pointB = Surface.PointAtParameter(0, 0);
+                        var pointC = Surface.PointAtParameter(0, 0);
+                        var pointD = Surface.PointAtParameter(0, 0);
+
+                        if (i > 0)
+                        {
+                            pointA = Surface.PointAtParameter((i - 1) * ustep, j * vstep);
+                        }
+                        else
+                        {
+                            pointB = Surface.PointAtParameter(i * ustep, j * vstep);
+                        }
+
+                        if (j > 0)
+                        {
+                            pointB = Surface.PointAtParameter(i * ustep, (j - 1) * vstep);
+                        }
+                        else
+                        {
+                            pointB = Surface.PointAtParameter(i * ustep, j * vstep);
+                        }
+
+                        if (i < Udivision)
+                        {
+                            pointC = Surface.PointAtParameter((i + 1) * ustep, j * vstep);
+                        }
+                        else
+                        {
+                            pointC = Surface.PointAtParameter(i * ustep, j * vstep);
+                        }
+
+                        if (j <= (Vdivision - 1))
+                        {
+                            pointD = Surface.PointAtParameter(i * ustep, (j + 1) * vstep);
+                        }
+                        else
+                        {
+                            pointD = Surface.PointAtParameter(i * ustep, j * vstep);
+                        }
+
+                        if (i > 0 && j > 0 && i < Udivision && j <= (Vdivision - 1))
+                        {
+                            var points = new List<Point>();
+                            points.Add(pointA);
+                            points.Add(pointB);
+                            points.Add(pointC);
+                            points.Add(pointD);
+
+                            var panel = Surface.ByPerimeterPoints(points);
+                            dpanels.Add(panel);
+
+                            pointA.Dispose();
+                            pointB.Dispose();
+                            pointC.Dispose();
+                            pointD.Dispose();
+                        }
+
+                        if (i > 0 && j>0 && i < Udivision && j < Vdivision)
+                        {
+                            var points = new List<Point>();
+                        }
+
+                        else
+                        {
+                            if (i == 0 && j == 0)
+                            {
+                                var points = new List<Point>();
+                                points.Add(pointB);
+                                points.Add(pointC);
+                                points.Add(pointD);
+
+                                var panel = Surface.ByPerimeterPoints(points);
+                                tpanels.Add(panel);
+
+                                pointA.Dispose();
+                                pointB.Dispose();
+                                pointC.Dispose();
+                                pointD.Dispose();
+
+
+                            }
+
+                            if (i == 0 && j == Vdivision)
+                            {
+                                var points = new List<Point>();
+                                points.Add(pointB);
+                                points.Add(pointC);
+                                points.Add(pointD);
+
+                                var panel = Surface.ByPerimeterPoints(points);
+                                tpanels.Add(panel);
+
+                                pointA.Dispose();
+                                pointB.Dispose();
+                                pointC.Dispose();
+                                pointD.Dispose();
+
+                            }
+
+                            if (i == Udivision && j == 0)
+                            {
+                                var points = new List<Point>();
+                                points.Add(pointC);
+                                points.Add(pointD);
+                                points.Add(pointA);
+
+                                var panel = Surface.ByPerimeterPoints(points);
+                                tpanels.Add(panel);
+
+                                pointA.Dispose();
+                                pointB.Dispose();
+                                pointC.Dispose();
+                                pointD.Dispose();
+
+                            }
+
+                            if (i == Udivision && j == Vdivision)
+                            {
+                                var points = new List<Point>();
+                                points.Add(pointA);
+                                points.Add(pointB);
+                                points.Add(pointC);
+
+                                var panel = Surface.ByPerimeterPoints(points);
+                                tpanels.Add(panel);
+
+                                pointA.Dispose();
+                                pointB.Dispose();
+                                pointC.Dispose();
+                                pointD.Dispose();
+                            }
+
+                            if (i == 0 && j >0 && j < Vdivision)
+                            {
+                                var points = new List<Point>();
+                                points.Add(pointB);
+                                points.Add(pointC);
+                                points.Add(pointD);
+
+                                var panel = Surface.ByPerimeterPoints(points);
+                                tpanels.Add(panel);
+
+                                pointA.Dispose();
+                                pointB.Dispose();
+                                pointC.Dispose();
+                                pointD.Dispose();
+
+                            }
+
+                            if (i == Udivision && j > 0 && j < Vdivision)
+                            {
+                                var points = new List<Point>();
+                                points.Add(pointA);
+                                points.Add(pointB);
+                                points.Add(pointD);
+
+                                var panel = Surface.ByPerimeterPoints(points);
+                                tpanels.Add(panel);
+
+                                pointA.Dispose();
+                                pointB.Dispose();
+                                pointC.Dispose();
+                                pointD.Dispose();
+                            }
+
+                            if (j == 0 && i > 0 && j < Vdivision)
+                            {
+                                var points = new List<Point>();
+                                points.Add(pointA);
+                                points.Add(pointC);
+                                points.Add(pointD);
+
+                                var panel = Surface.ByPerimeterPoints(points);
+                                tpanels.Add(panel);
+                                pointA.Dispose();
+                                pointB.Dispose();
+                                pointC.Dispose();
+                                pointD.Dispose();
+                            }
+
+                            if (j == Vdivision && i > 0 && i < Udivision)
+                            {
+                                var points = new List<Point>();
+                                points.Add(pointA);
+                                points.Add(pointB);
+                                points.Add(pointC);
+
+                                var panel = Surface.ByPerimeterPoints(points);
+                                tpanels.Add(panel);
+
+                                pointA.Dispose();
+                                pointB.Dispose();
+                                pointC.Dispose();
+                                pointD.Dispose();
+                            }
+                        }
+
+                    }
+                   
+                }
+
+
+            }
+
+            return new Dictionary<string, object> { { "DiamondPanel", dpanels }, { "Triangle", tpanels } };
+        }
+        
     }
 }
 

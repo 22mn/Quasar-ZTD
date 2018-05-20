@@ -440,6 +440,20 @@ namespace Quasar
             return NameList;
         }
 
-        
+        /// <summary>
+        /// Collect elements by category and document.
+        /// </summary>
+        /// <param name="Category">Category object</param>
+        /// <param name="Document">Document object</param>
+        /// <returns name = "Element">List of elements</returns>
+        public static List<Revit.Elements.Element> GetElementFromLinkDocument(Revit.Elements.Category Category, Autodesk.Revit.DB.Document Document)
+        {
+            var cate = (BuiltInCategory)Enum.ToObject(typeof(BuiltInCategory), Category.Id);
+            var filter = new ElementCategoryFilter(cate);
+            var Element = new FilteredElementCollector(Document).WherePasses(filter).WhereElementIsNotElementType().ToElements().Select(x => x.ToDSType(true)).ToList();
+            return Element;
+        }
+
+
     }
 }

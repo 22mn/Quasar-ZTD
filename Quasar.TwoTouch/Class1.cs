@@ -91,7 +91,8 @@ namespace Quasar
         /// <returns name="Views">Pasted Views</returns>
 
         [IsVisibleInDynamoLibrary(true)]
-        public static List<Revit.Elements.Element> CopyPasteFilter(Revit.Elements.Views.View ViewToCopy, List<Revit.Elements.Views.View> ViewToPaste)
+        public static List<Revit.Elements.Element> CopyPasteFilter(Revit.Elements.Views.View ViewToCopy, 
+                                                                   List<Revit.Elements.Views.View> ViewToPaste)
         {
 
             var filtersId = new List<ElementId>();
@@ -131,10 +132,12 @@ namespace Quasar
         /// <param name="HideUnhide">true = hide , false = unhide</param>
         /// <returns>Return message</returns>
         [IsVisibleInDynamoLibrary(true)]
-        public static String HideUnHideElement(List<Revit.Elements.Element> Elements, List<Revit.Elements.Element> Views, Boolean HideUnhide = false)
+        public static String HideUnHideElement(List<Revit.Elements.Element> Elements, List<Revit.Elements.Element> Views,
+                                               Boolean HideUnhide = false)
         {
             var ids = new List<ElementId>();
-            RevitServices.Transactions.TransactionManager.Instance.EnsureInTransaction(RevitServices.Persistence.DocumentManager.Instance.CurrentDBDocument);
+            RevitServices.Transactions.TransactionManager.Instance
+                                .EnsureInTransaction(RevitServices.Persistence.DocumentManager.Instance.CurrentDBDocument);
             foreach (var elem in Elements)
             {
                 var id = (Autodesk.Revit.DB.Element)elem.InternalElement;
@@ -165,11 +168,13 @@ namespace Quasar
         /// <param name="Names">List of names for new views</param>
         /// <param name="Offset">Cropbox offset from room</param>
         /// <returns name="FloorPlanView">Created Ceiling Views</returns>
-        public static List<Revit.Elements.Element> FloorPlanViewByRoom(Revit.Elements.Element Level, List<Revit.Elements.Room> Rooms, List<String> Names, double Offset = 500)
+        public static List<Revit.Elements.Element> FloorPlanViewByRoom(Revit.Elements.Element Level, List<Revit.Elements.Room> Rooms, 
+                                                                       List<String> Names, double Offset = 500)
         {
             var FloorPlanView = new List<Revit.Elements.Element>();
             var doc = DocumentManager.Instance.CurrentDBDocument;
-            var CViews = new FilteredElementCollector(doc).OfClass(typeof(View)).Cast<View>().Where(x => x.ViewType == ViewType.FloorPlan).ToList();
+            var CViews = new FilteredElementCollector(doc).OfClass(typeof(View)).Cast<View>()
+                .Where(x => x.ViewType == ViewType.FloorPlan).ToList();
             var ceiling = from c in CViews where c.LookupParameter("Associated Level").AsString() == Level.Name.ToString() select c;
             var view = ceiling.First();
             RevitServices.Transactions.TransactionManager.Instance.EnsureInTransaction(doc);
@@ -201,11 +206,13 @@ namespace Quasar
         /// <param name="Offset">Offset value for section box. Default is 500.</param>
         /// <returns name="ThreeDView">New 3D Views</returns>
         [IsVisibleInDynamoLibrary(true)]
-        public static List<Revit.Elements.Element> ThreeDViewByRoom(List<Revit.Elements.Room> Rooms, List<String> Names, double Offset = 500)
+        public static List<Revit.Elements.Element> ThreeDViewByRoom(List<Revit.Elements.Room> Rooms, List<String> Names,
+                                                                    double Offset = 500)
         {
             var ThreeDViews = new List<Revit.Elements.Element>();
             var doc = DocumentManager.Instance.CurrentDBDocument;
-            var vtype = new FilteredElementCollector(doc).OfClass(typeof(ViewFamilyType)).Cast<ViewFamilyType>().FirstOrDefault(a => a.ViewFamily == ViewFamily.ThreeDimensional);
+            var vtype = new FilteredElementCollector(doc).OfClass(typeof(ViewFamilyType)).Cast<ViewFamilyType>()
+                        .FirstOrDefault(a => a.ViewFamily == ViewFamily.ThreeDimensional);
             RevitServices.Transactions.TransactionManager.Instance.EnsureInTransaction(doc);
             foreach (var elem in Rooms.Zip(Names, Tuple.Create))
             {
@@ -235,11 +242,13 @@ namespace Quasar
         /// <param name="Names">List of names for new views</param>
         /// <param name="Offset">Cropbox offset from room</param>
         /// <returns name="CeilingView">Created Ceiling Views</returns>
-        public static List<Revit.Elements.Element> CeilingViewByRoom(Revit.Elements.Element Level, List<Revit.Elements.Room> Rooms, List<String> Names, double Offset = 500)
+        public static List<Revit.Elements.Element> CeilingViewByRoom(Revit.Elements.Element Level, List<Revit.Elements.Room> Rooms, 
+                                                                     List<String> Names, double Offset = 500)
         {
             var CeilingView = new List<Revit.Elements.Element>();
             var doc = DocumentManager.Instance.CurrentDBDocument;
-            var CViews = new FilteredElementCollector(doc).OfClass(typeof(View)).Cast<View>().Where(x => x.ViewType == ViewType.CeilingPlan).ToList();
+            var CViews = new FilteredElementCollector(doc).OfClass(typeof(View)).Cast<View>()
+                        .Where(x => x.ViewType == ViewType.CeilingPlan).ToList();
             var ceiling = from c in CViews where c.LookupParameter("Associated Level").AsString() == Level.Name.ToString() select c;
             var view = ceiling.First();
             RevitServices.Transactions.TransactionManager.Instance.EnsureInTransaction(doc);
@@ -271,17 +280,20 @@ namespace Quasar
         /// <param name="Offset">Offset from room , default is 500</param>
         /// <returns name="ElevationView"> New Elevation Views</returns>
         [IsVisibleInDynamoLibrary(true)]
-        public static List<List<Revit.Elements.Element>> ElevationInRoom(List<Revit.Elements.Room> Rooms, Revit.Elements.Element FloorPlan, double Offset = 500)
+        public static List<List<Revit.Elements.Element>> ElevationInRoom(List<Revit.Elements.Room> Rooms,
+                                                                         Revit.Elements.Element FloorPlan, double Offset = 500)
         {
             var doc = DocumentManager.Instance.CurrentDBDocument;
-            var vtype = new FilteredElementCollector(doc).OfClass(typeof(ViewFamilyType)).Cast<ViewFamilyType>().FirstOrDefault(a => a.ViewFamily == ViewFamily.Elevation);
+            var vtype = new FilteredElementCollector(doc).OfClass(typeof(ViewFamilyType)).Cast<ViewFamilyType>()
+                        .FirstOrDefault(a => a.ViewFamily == ViewFamily.Elevation);
             var ElevationView = new List<List<Revit.Elements.Element>>();
             RevitServices.Transactions.TransactionManager.Instance.EnsureInTransaction(doc);
             foreach (var r in Rooms)
             {
                 var list = new List<Revit.Elements.Element>();
                 var elevViews = new List<Revit.Elements.Element>();
-                String rname = r.InternalElement.LookupParameter("Name").AsString() + "_" + r.InternalElement.LookupParameter("Number").AsString();
+                String rname = r.InternalElement.LookupParameter("Name").AsString() + "_" + 
+                                r.InternalElement.LookupParameter("Number").AsString();
 
                 LocationPoint elevPoint = (Autodesk.Revit.DB.LocationPoint)r.InternalElement.Location;
                 XYZ point = elevPoint.Point;
@@ -384,11 +396,13 @@ namespace Quasar
                 var cateIds = new List<ElementId> { grids.First().Category.Id, levels.First().Category.Id };
                 var gridTypeIds = new HashSet<ElementId>();
                 var levelTypeIds = new HashSet<ElementId>();
-                foreach (var i in grids.Zip(levels, Tuple.Create)) { gridTypeIds.Add(i.Item1.GetTypeId()); levelTypeIds.Add(i.Item2.GetTypeId()); }
+                foreach (var i in grids.Zip(levels, Tuple.Create)) 
+                    { gridTypeIds.Add(i.Item1.GetTypeId()); levelTypeIds.Add(i.Item2.GetTypeId()); }
 
                 var gtypeElements = new List<Autodesk.Revit.DB.Element>();
                 var ltypeElements = new List<Autodesk.Revit.DB.Element>();
-                foreach (var i in gridTypeIds.Zip(levelTypeIds, Tuple.Create)) { gtypeElements.Add(doc.GetElement(i.Item1)); ltypeElements.Add(doc.GetElement(i.Item2)); }
+                foreach (var i in gridTypeIds.Zip(levelTypeIds, Tuple.Create)) 
+                    { gtypeElements.Add(doc.GetElement(i.Item1)); ltypeElements.Add(doc.GetElement(i.Item2)); }
                 gtypeElements.AddRange(ltypeElements);
 
                 foreach (var e in gtypeElements)
@@ -429,7 +443,8 @@ namespace Quasar
                 foreach (var p in Names)
                 {
 
-                    if (Element.InternalElement.get_Parameter((BuiltInParameter)i) != null && Element.InternalElement.get_Parameter((BuiltInParameter)i).Definition.Name == p)
+                    if (Element.InternalElement.get_Parameter((BuiltInParameter)i) != null && Element.InternalElement
+                                                            .get_Parameter((BuiltInParameter)i).Definition.Name == p)
                     {
                         sub.Add(p); sub.Add(i.ToString());
                         NameList.Add(sub);
@@ -446,11 +461,13 @@ namespace Quasar
         /// <param name="Category">Category object</param>
         /// <param name="Document">Document object</param>
         /// <returns name = "Element">List of elements</returns>
-        public static List<Revit.Elements.Element> GetElementFromLinkDocument(Revit.Elements.Category Category, Autodesk.Revit.DB.Document Document)
+        public static List<Revit.Elements.Element> GetElementFromLinkDocument(Revit.Elements.Category Category, 
+                                                                              Autodesk.Revit.DB.Document Document)
         {
             var cate = (BuiltInCategory)Enum.ToObject(typeof(BuiltInCategory), Category.Id);
             var filter = new ElementCategoryFilter(cate);
-            var Element = new FilteredElementCollector(Document).WherePasses(filter).WhereElementIsNotElementType().ToElements().Select(x => x.ToDSType(true)).ToList();
+            var Element = new FilteredElementCollector(Document).WherePasses(filter).WhereElementIsNotElementType()
+                            .ToElements().Select(x => x.ToDSType(true)).ToList();
             return Element;
         }
 
@@ -490,7 +507,8 @@ namespace Quasar
         /// <param name="ParamNames">Parameter names</param>
         /// <returns>Parameter value and boolean(true is set , false can't set)</returns>
         [IsVisibleInDynamoLibrary(true)]
-        public static object GetAndSetParams(List<Revit.Elements.Element> FirstElements, List<Revit.Elements.Element> SecondElements, List<string> ParamNames)
+        public static object GetAndSetParams(List<Revit.Elements.Element> FirstElements, 
+                                             List<Revit.Elements.Element> SecondElements, List<string> ParamNames)
         {
             var Result = new List<object>();
             var doc = DocumentManager.Instance.CurrentDBDocument;

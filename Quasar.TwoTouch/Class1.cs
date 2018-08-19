@@ -527,6 +527,85 @@ namespace Quasar
             }
             RevitServices.Transactions.TransactionManager.Instance.TransactionTaskDone();
             return Result;
-        }      
+        }
+
+        /// <summary>
+        /// Create WallSweep by wall.
+        /// </summary>
+        /// <param name="Walls">Wall Elements</param>
+        /// <param name="TypeElement">Wall sweep type element</param>
+        /// <param name="SweepOrReveal">String value "Sweep" or "Reveal"</param>
+        /// <param name="IsVertical">Is vertical true or false</param>
+        /// <param name="Offset">distance from wall base</param>
+        /// <returns name="WallSweeps">WallSweep Elements</returns>
+
+        [IsVisibleInDynamoLibrary(true)]
+        public static List<Revit.Elements.Element> CreateWallSweep(List<Revit.Elements.Wall> Walls, Revit.Elements.Element TypeElement, string SweepOrReveal, bool IsVertical, double Offset = 1000)
+        {
+            var doc = DocumentManager.Instance.CurrentDBDocument;
+            var WallSweeps = new List<Revit.Elements.Element>();
+            var wallSweepTypes = new Dictionary<string, Autodesk.Revit.DB.WallSweepType>();
+            wallSweepTypes.Add("Sweep", WallSweepType.Sweep);
+            wallSweepTypes.Add("Reveal", WallSweepType.Reveal);
+            var wallSweepTypeId = TypeElement.InternalElement.Id;
+
+            WallSweepInfo wallSweepInfo = new WallSweepInfo(wallSweepTypes[SweepOrReveal], IsVertical);
+            wallSweepInfo.Distance = Offset / 304.8;
+
+            RevitServices.Transactions.TransactionManager.Instance.EnsureInTransaction(doc);
+
+            foreach (var w in Walls)
+            {
+                var wall = w.InternalElement as Autodesk.Revit.DB.Wall;
+                WallSweep wallSweep = WallSweep.Create(wall, wallSweepTypeId, wallSweepInfo);
+                WallSweeps.Add(wallSweep.ToDSType(true));
+            }
+
+            RevitServices.Transactions.TransactionManager.Instance.TransactionTaskDone();
+            return WallSweeps;
+        }
+
+
+        /// <summary>
+        /// Remove paint from walls.
+        /// </summary>
+        /// <param name="Walls">Wall Elements</param>
+        /// <returns name="WallElements">Wall Elements</returns>
+        [IsVisibleInDynamoLibrary(false)]
+        public static List<Revit.Elements.Element> WallPaintRemove(List<Revit.Elements.Element> Walls)
+        {
+            var doc = DocumentManager.Instance.CurrentDBDocument;
+            var WallElements = Walls;
+            foreach (var wall in Walls)
+            {
+                var solid = wall.InternalElement.GetGeometryObjectFromReference(new Reference(wall.InternalElement)) as Autodesk.Revit.DB.Solid;
+
+                foreach (Autodesk.Revit.DB.Face face in solid.Faces)
+                {
+                    doc.RemovePaint(wall.InternalElement.Id, face);
+                }
+            }
+
+            return WallElements;
+        }
+
+        /// <summary>
+        /// Get Type Element of input element.
+        /// </summary>
+        /// <param name="Elements">Element input</param>
+        /// <returns name="ElementTypes">Return Type Element of input Element</returns>
+        [IsVisibleInDynamoLibrary(true)]
+        public static List<Revit.Elements.Element> GetElementType(List<Revit.Elements.Element> Elements)
+        {
+            var ElementTypes = new List<Revit.Elements.Element>();
+            var doc = DocumentManager.Instance.CurrentDBDocument;
+            foreach (var elem in Elements)
+            {
+                var id = elem.InternalElement.GetTypeId();
+                var typeElement = doc.GetElement(id);
+                ElementTypes.Add(typeElement.ToDSType(true));
+            }
+            return ElementTypes;
+        }
     }
 }

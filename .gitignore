@@ -1,0 +1,8 @@
+# Don't track content of these folders
+.vs
+
+# Complied source #
+###################
+
+*.dll
+*.exe

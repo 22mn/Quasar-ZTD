@@ -101,13 +101,13 @@
             <param name="Walls">Wall Elements</param>
             <returns name="WallElements">Wall Elements</returns>
         </member>
-        <member name="T:Quasar.RevitNodes">
+        <member name="T:Quasar.ElementUtility">
              <summary>
              Quasar RevitNodes Class
             
              </summary>
         </member>
-        <member name="M:Quasar.RevitNodes.GetAndSetParams(System.Collections.Generic.List{Revit.Elements.Element},System.Collections.Generic.List{Revit.Elements.Element},System.Collections.Generic.List{System.String})">
+        <member name="M:Quasar.ElementUtility.GetAndSetParams(System.Collections.Generic.List{Revit.Elements.Element},System.Collections.Generic.List{Revit.Elements.Element},System.Collections.Generic.List{System.String})">
             <summary>
             Get parameter from first input and Set this value to second input
             </summary>
@@ -116,7 +116,7 @@
             <param name="ParamNames">Parameter names</param>
             <returns>Parameter value and boolean(true is set , false can't set)</returns>
         </member>
-        <member name="M:Quasar.RevitNodes.GetElementType(System.Collections.Generic.List{Revit.Elements.Element})">
+        <member name="M:Quasar.ElementUtility.GetElementType(System.Collections.Generic.List{Revit.Elements.Element})">
             <summary>
             Get Type Element of input element.
             </summary>
@@ -127,6 +127,20 @@
             <summary>
             Quasar RoomUtility class contains room operation nodes
             </summary>
+        </member>
+        <member name="M:Quasar.RoomUtility.MassingsByRooms(System.Collections.Generic.List{Revit.Elements.Element})">
+            <summary>
+            Create revit massings by room elements.
+            </summary>
+            <param name="Rooms"></param>
+            <returns name="Massings">Mass elements</returns>
+        </member>
+        <member name="M:Quasar.RoomUtility.CenterRoom(System.Collections.Generic.List{Revit.Elements.Element})">
+            <summary>
+            Relocate room element to center of the room.
+            </summary>
+            <param name="Rooms">list of rooms</param>
+            <returns name="RoomElemets">room elements</returns>
         </member>
         <member name="T:Quasar.ViewUtility">
             <summary>

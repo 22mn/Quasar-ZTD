@@ -405,6 +405,7 @@ namespace Quasar
         /// </summary>
         /// <param name="Rooms"></param>
         /// <returns name="Massings">Mass elements</returns>
+        [IsVisibleInDynamoLibrary(true)]
         public static List<Revit.Elements.Element> MassingsByRooms(List<Revit.Elements.Element> Rooms)
         {
             var doc = DocumentManager.Instance.CurrentDBDocument;
@@ -439,8 +440,42 @@ namespace Quasar
             return Massings;
 
         }
-    }
+        /// <summary>
+        /// Relocate room element to center of the room.
+        /// </summary>
+        /// <param name="Rooms">list of rooms</param>
+        /// <returns name="RoomElemets">room elements</returns>
+        [IsVisibleInDynamoLibrary(true)]
+        public static List<Revit.Elements.Element> CenterRoom(List<Revit.Elements.Element> Rooms)
+        {
+            var RoomElements = Rooms;
+            var doc = DocumentManager.Instance.CurrentDBDocument;
+            TransactionManager.Instance.EnsureInTransaction(doc);
+            foreach(var room in Rooms)
+            {
+                var level = (Autodesk.Revit.DB.Level)doc.GetElement(room.InternalElement.LevelId);
+                var elevation = level.Elevation * 304.8;
+                var geoobj = room.InternalElement.get_Geometry(new Options());
+                var get_enum = geoobj.GetEnumerator();
+                var next = get_enum.MoveNext();
+                var shape = (Autodesk.Revit.DB.Solid)get_enum.Current;
+                var room_geometry = shape.ToProtoType(true);
+                var point = room_geometry.Centroid();
+                var center = Autodesk.DesignScript.Geometry.Point.ByCoordinates(point.X, point.Y, elevation);
+                var current_loc = (LocationPoint)room.InternalElement.Location;
+                var current_point = current_loc.Point;
 
+                var new_loc = center.ToXyz() - current_point;
+                room.InternalElement.Location.Move(new_loc);
+            
+            }
+
+            TransactionManager.Instance.TransactionTaskDone();
+            return RoomElements;
+        }
+
+
+    }
 
     /// <summary>
     /// This class contains view related nodes.

@@ -69,10 +69,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
-    <Compile Include="Class2.cs" />
+    <Compile Include="RevitNodes.cs" />
+    <Compile Include="DynamoNodes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ViewUtility.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Quasar_DynamoCustomization.xml">

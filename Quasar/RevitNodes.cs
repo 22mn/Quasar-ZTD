@@ -394,6 +394,48 @@ namespace Quasar
         
 
     }
+    /// <summary>
+    /// Quasar RoomUtility class contains room operation nodes
+    /// </summary>
+
+    public static class RoomUtility
+    {
+        public static List<Revit.Elements.Element> MassingsByRooms(List<Revit.Elements.Element> Rooms)
+        {
+            var doc = DocumentManager.Instance.CurrentDBDocument;
+            var MassBICObj = (BuiltInParameter)System.Enum.ToObject(typeof(BuiltInCategory), BuiltInCategory.OST_Mass);
+            var objId = new ElementId(MassBICObj);
+            TransactionManager.Instance.EnsureInTransaction(doc);
+            var Massings = new List<Revit.Elements.Element>();
+            foreach (var room in Rooms)
+            {
+                var name = room.InternalElement.LookupParameter("Name").AsString();
+                var number = room.InternalElement.LookupParameter("Number").AsString();
+
+                var elem_name = number + "_" + name;
+                var geoobj = room.InternalElement.get_Geometry(new Options());
+                var get_enum = geoobj.GetEnumerator();
+                var next = get_enum.MoveNext();
+                var shape = get_enum.Current;
+                var shape_list = new List<GeometryObject>();
+                shape_list.Add(shape);
+                var shapeType = DirectShapeType.Create(doc, elem_name, objId);
+                shapeType.SetShape(shape_list);
+                var lib = DirectShapeLibrary.GetDirectShapeLibrary(doc);
+                lib.AddDefinitionType(elem_name, shapeType.Id);
+                var element = Autodesk.Revit.DB.DirectShape.CreateElementInstance(doc, shapeType.Id, objId, elem_name, Transform.Identity);
+                element.SetTypeId(shapeType.Id);
+
+                Massings.Add(element.ToDSType(true));
+
+            }
+
+            TransactionManager.Instance.TransactionTaskDone();
+            return Massings;
+
+        }
+    }
+
 
     /// <summary>
     /// This class contains view related nodes.

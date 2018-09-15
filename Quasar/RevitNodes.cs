@@ -338,7 +338,7 @@ namespace Quasar
     /// Quasar RevitNodes Class
     ///
     /// </summary>
-    public static class RevitNodes
+    public static class ElementUtility
     {
         
         
@@ -397,9 +397,14 @@ namespace Quasar
     /// <summary>
     /// Quasar RoomUtility class contains room operation nodes
     /// </summary>
-
+    
     public static class RoomUtility
     {
+        /// <summary>
+        /// Create revit massings by room elements.
+        /// </summary>
+        /// <param name="Rooms"></param>
+        /// <returns name="Massings">Mass elements</returns>
         public static List<Revit.Elements.Element> MassingsByRooms(List<Revit.Elements.Element> Rooms)
         {
             var doc = DocumentManager.Instance.CurrentDBDocument;
